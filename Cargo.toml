@@ -1,0 +1,6 @@
+[package]
+name = "rusty_jello"
+version = "0.7.0"
+authors = ["Jacob Allen <jacob@polyomino.xyz>"]
+
+[dependencies]
