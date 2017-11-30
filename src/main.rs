@@ -1,20 +1,29 @@
 //! Rusty Jello is a simple (and a bit hack-y) language created by Jacob Allen
 
-use std::env;
+pub mod arguments;
+pub mod machine;
+pub mod compiler;
+pub mod instructions;
 
-pub mod args;
-//use std::fs::File;
-//use std::io::prelude::*;
+use arguments::Args;
+use machine::Machine;
+
+use std::env;
+use std::fs::File;
+use std::path::Path;
+use std::io::prelude::*;
+use std::io::ErrorKind;
 
 fn main() {
   println!("Rusty Jello v0.7.0 (Rumbustious) by Jacob Allen");
 
-  let args: args::Args = args::Args::new(
+  let args: Args = Args::new(
     env::args().collect(),
     vec!["-v".to_string(), "-h".to_string()],
   );
   let mut input_file: String = "".to_string();
   let debug_level: u8;
+  let tick_rate: f64;
 
   if args.has_arg("") {
     if args.count_arg("") > 1 {
@@ -56,11 +65,45 @@ fn main() {
     None => debug_level = 0,
   }
 
-  println!("{}", debug_level);
-  println!("{}", input_file);
+  match args.get_arg("-t") {
+    Some(arg) => {
+      let value: String = arg.value.to_string();
+      match value.parse::<f64>() {
+        Ok(val) => tick_rate = val,
+        Err(err) => {
+          println!("Invalid clock rate specified, {}", err);
+          return;
+        }
+      }
+    }
+    None => tick_rate = 0.0,
+  }
 
   if input_file == "" {
     println!("Rusty Jello requires an input file to run");
     return;
+  }
+
+  print!("Reading file... ");
+
+  let mut file: File;
+  let input_file_path: &Path = Path::new(&input_file);
+  let mut code: String = String::new();
+
+  match File::open(input_file_path) {
+    Ok(_file) => file = _file,
+    Err(err) => {
+      match err.kind() {
+        ErrorKind::NotFound => println!("Input file '{}' does not exist", input_file),
+        ErrorKind::PermissionDenied => println!("Input file access denied"),
+        _ => println!("Error opening file, {:?}", err),
+      }
+      return;
+    }
+  }
+
+  match file.read_to_string(&mut code) {
+    Ok(..) => println!("File read"),
+    Err(err) => println!("Error reading file, {:?}", err),
   }
 }

@@ -1,0 +1,10 @@
+#Fibonacci Example
+SETMEM 0 1
+SETREG 1
+:start
+SETMEM 1 REG
+ADD MEM(0)
+SETMEM 0 MEM(1)
+SETOUT REG
+IF LT 200
+  JUMP :start
