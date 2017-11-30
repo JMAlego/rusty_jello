@@ -76,8 +76,45 @@ impl Machine {
   }
 }
 
+/// Functions for setting the machine flags 
 impl Machine {
   pub fn flag_set_halt(&mut self, val: bool){
     self.flags.halt = val;
   }
+  pub fn flag_set_carry(&mut self, val: bool){
+    self.flags.carry = val;
+  }
+  pub fn flag_set_overflow(&mut self, val: bool){
+    self.flags.overflow = val;
+  }
+  pub fn flag_set_test(&mut self, val: bool){
+    self.flags.halt = val;
+  }
 }
+
+/// Functions for getting the machine flags
+impl Machine {
+  pub fn flag_get_halt(&self) -> bool{
+    return self.flags.halt;
+  }
+  pub fn flag_get_carry(&self) -> bool{
+    return self.flags.carry;
+  }
+  pub fn flag_get_overflow(&self) -> bool{
+    return self.flags.overflow;
+  }
+  pub fn flag_get_test(&self) -> bool{
+    return self.flags.halt;
+  }
+}
+
+/// Functions for interacting with machine memory
+impl Machine{
+  pub fn mem_read(&self, location: u16) -> u8{
+    return self.memory[location as usize];
+  }
+  pub fn mem_write(&mut self, location: u16, data: u8){
+    self.memory[location as usize] = data;
+  }
+}
+
