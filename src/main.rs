@@ -7,6 +7,7 @@ pub mod instructions;
 
 use arguments::Args;
 use machine::Machine;
+use compiler::Compiler;
 
 use std::env;
 use std::fs::File;
@@ -106,4 +107,15 @@ fn main() {
     Ok(..) => println!("File read"),
     Err(err) => println!("Error reading file, {:?}", err),
   }
+
+  let mut machine: Machine = Machine::new();
+  println!("{:?}", machine);
+  machine.stack.push(21);
+  machine.stack.push(20);
+  println!("{:?}", machine);
+  (instructions::find_inst("SUB").unwrap().run)(&mut machine);
+  println!("{:?}", machine);
+  let mut comp: Compiler = Compiler::new();
+  comp.add_string("LOADI 0x00FF");
+  println!("{:?}", comp.compile());
 }

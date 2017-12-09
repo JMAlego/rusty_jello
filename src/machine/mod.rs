@@ -1,10 +1,12 @@
 //! Representation of the Rusty Jello machine
 
-pub enum Register{
+use std::fmt;
+
+pub enum Register {
   R0 = 0,
   R1 = 1,
   R2 = 2,
-  R3 = 3
+  R3 = 3,
 }
 
 pub struct Flags {
@@ -12,6 +14,12 @@ pub struct Flags {
   pub carry: bool,
   pub overflow: bool,
   pub test: bool,
+}
+
+impl fmt::Debug for Flags {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f,"{{halt: {}, carry: {}, overflow: {}, test: {}}}", self.halt, self.carry, self.overflow, self.test)
+  }
 }
 
 pub struct Stack {
@@ -31,8 +39,8 @@ impl Stack {
 impl Stack {
   pub fn push(&mut self, item: u16) -> bool {
     if self.stack_pointer < 15 {
-      self.stack_pointer += 1;
       self.stack[self.stack_pointer as usize] = item;
+      self.stack_pointer += 1;
       return true;
     }
     for i in 0..15 {
@@ -44,9 +52,22 @@ impl Stack {
   pub fn pop(&mut self) -> u16 {
     if self.stack_pointer > 0 {
       self.stack_pointer -= 1;
-      return self.stack[self.stack_pointer as usize + 1];
+      return self.stack[self.stack_pointer as usize];
     }
     return 0;
+  }
+}
+
+impl fmt::Debug for Stack {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    let mut stack: String = String::new();
+    for index in 0..self.stack_pointer {
+      stack += self.stack[index as usize].to_string().as_ref();
+      if index + 1 != self.stack_pointer {
+        stack += ", ";
+      }
+    }
+    write!(f,"{{{}}}", stack)
   }
 }
 
@@ -76,5 +97,23 @@ impl Machine {
         test: false,
       },
     };
+  }
+}
+
+impl fmt::Debug for Machine {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(
+      f,
+      "Machine {{
+          acc: {},
+          ip: {},
+          stack: {:?},
+          flags: {:?}
+        }}",
+      self.accumulator,
+      self.instruction_pointer,
+      self.stack,
+      self.flags,
+    )
   }
 }
