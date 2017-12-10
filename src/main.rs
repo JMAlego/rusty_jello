@@ -2,12 +2,12 @@
 
 pub mod arguments;
 pub mod machine;
-pub mod compiler;
+pub mod assembler;
 pub mod instructions;
 
 use arguments::Args;
 use machine::Machine;
-use compiler::Compiler;
+use assembler::Assembler;
 
 use std::env;
 use std::fs::File;
@@ -105,17 +105,30 @@ fn main() {
 
   match file.read_to_string(&mut code) {
     Ok(..) => println!("File read"),
-    Err(err) => println!("Error reading file, {:?}", err),
+    Err(err) => {
+      println!("Error reading file, {:?}", err);
+      return;
+    }
   }
 
   let mut machine: Machine = Machine::new();
+  let mut assembler: Assembler = Assembler::new();
+  assembler.add_string("LOADI :test\nLOADI 0x00ff\nNOOP\nNOOP\nNOOP\nNOOP\nNOOP\n:test\nLOADI 0x1234");
+
+  match assembler.assemble() {
+    Ok(bytecode) => {
+      let mut pointer: usize = 0;
+      for byte in bytecode {
+        machine.memory[pointer] = byte;
+        pointer += 1;
+      }
+    }
+    Err(err) => {
+      println!("{}", err);
+      return;
+    }
+  }
+
   println!("{:?}", machine);
-  machine.stack.push(21);
-  machine.stack.push(20);
-  println!("{:?}", machine);
-  (instructions::find_inst("SUB").unwrap().run)(&mut machine);
-  println!("{:?}", machine);
-  let mut comp: Compiler = Compiler::new();
-  comp.add_string("LOADI 0x00FF");
-  println!("{:?}", comp.compile());
+
 }

@@ -9,6 +9,7 @@ use instructions::Instruction;
 enum ByteType {
   Data,
   Label,
+  LabelPadding,
   OpCode,
 }
 
@@ -17,6 +18,7 @@ impl fmt::Display for ByteType {
     match self {
       &ByteType::Data => write!(f, "Data"),
       &ByteType::Label => write!(f, "Label"),
+      &ByteType::LabelPadding => write!(f, "LabelPadding"),
       &ByteType::OpCode => write!(f, "OpCode"),
     }
   }
@@ -73,48 +75,46 @@ impl fmt::Debug for Label {
 }
 
 #[derive(Debug)]
-pub struct CompilerError<'a> {
+pub struct AssembleError<'a> {
   error_type: &'a str,
   error_description: &'a str,
 }
 
-impl<'a> fmt::Display for CompilerError<'a> {
+impl<'a> fmt::Display for AssembleError<'a> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}: {}", self.error_type, self.error_description)
   }
 }
 
-impl<'a> Error for CompilerError<'a> {
+impl<'a> Error for AssembleError<'a> {
   fn description(&self) -> &str {
     "Compiler Error"
   }
 }
 
-pub struct Compiler {
+pub struct Assembler {
   program: String,
-  labels: Vec<Label>,
 }
 
-impl Compiler {
-  pub fn new() -> Compiler {
-    return Compiler {
+impl Assembler {
+  pub fn new() -> Assembler {
+    return Assembler {
       program: "".to_string(),
-      labels: Vec::new(),
     };
   }
 }
 
-impl Compiler {
+impl Assembler {
   pub fn add_string(&mut self, new_lines: &str) {
     self.program.push_str(new_lines);
   }
 }
 
-impl Compiler {
-  pub fn compile(&mut self) -> Result<Vec<u8>, String> {
+impl Assembler {
+  pub fn assemble(&mut self) -> Result<Vec<u8>, String> {
     let mut result: Vec<u8> = Vec::new();
-    self.create_label_table()?;
-    let partially_compiled_bytecode = self.compile_program_to_bytecode()?;
+    self.check_labels()?;
+    let partially_compiled_bytecode = self.assemble_program_to_bytecode()?;
     for byte in partially_compiled_bytecode.iter() {
       match byte.byte_type {
         ByteType::Data => result.push(byte.byte_value),
@@ -128,13 +128,11 @@ impl Compiler {
               result.push((address & 0xff) as u8);
               result.push((address >> 8) as u8);
             }
-            match byte.byte_type {
-              ByteType::Label => address += 1,
-              _ => address += 1,
-            }
+            address += 1;
           }
         }
         ByteType::OpCode => result.push(byte.byte_value),
+        ByteType::LabelPadding => {},
       }
     }
 
@@ -142,8 +140,8 @@ impl Compiler {
   }
 }
 
-impl Compiler {
-  fn compile_program_to_bytecode(&mut self) -> Result<Vec<Byte>, String> {
+impl Assembler {
+  fn assemble_program_to_bytecode(&mut self) -> Result<Vec<Byte>, String> {
     let mut result: Vec<Byte> = Vec::new();
     let mut line_counter: usize = 1;
     let mut labels_from_previous: Vec<String> = Vec::new();
@@ -157,7 +155,7 @@ impl Compiler {
         line_counter += 1;
         continue;
       }
-      match self.compile_line_to_bytecode(line) {
+      match self.assemble_line_to_bytecode(line) {
         Ok(line_bytecode) => {
           for byte in line_bytecode {
             match byte.byte_type {
@@ -179,8 +177,8 @@ impl Compiler {
   }
 }
 
-impl Compiler {
-  pub fn create_label_table(&mut self) -> Result<(), String> {
+impl Assembler {
+  pub fn check_labels(&mut self) -> Result<(), String> {
     let mut line_counter: usize = 1;
     let mut already_used: Vec<String> = Vec::new();
     for line in self.program.trim().lines() {
@@ -188,14 +186,11 @@ impl Compiler {
         let label: String = line.trim().chars().skip(1).collect::<String>();
         if already_used.contains(&label) {
           return Err(format!(
-            "Preprocessor Error: label redefinition on line {}",
+            "Ambiguous Input Error: redefinition of label \"{}\" on line {}",
+            label,
             line_counter
           ));
         }
-        self.labels.push(Label {
-          name: label.to_string(),
-          line: line_counter,
-        });
         already_used.push(label);
       }
       line_counter += 1;
@@ -204,8 +199,8 @@ impl Compiler {
   }
 }
 
-impl Compiler {
-  fn compile_line_to_bytecode(&self, line: &str) -> Result<Vec<Byte>, CompilerError> {
+impl Assembler {
+  fn assemble_line_to_bytecode(&self, line: &str) -> Result<Vec<Byte>, AssembleError> {
     let mut result: Vec<Byte> = Vec::new();
     let mut split_line: Vec<&str> = line.trim().split(' ').collect();
     let inst: Instruction;
@@ -216,14 +211,14 @@ impl Compiler {
           inst = i;
         }
         None => {
-          return Err(CompilerError {
+          return Err(AssembleError {
             error_type: "Syntax Error",
             error_description: "unknown instruction",
           })
         }
       }
       if inst.num_args as usize != split_line.len() - 1 {
-        return Err(CompilerError {
+        return Err(AssembleError {
           error_type: "Syntax Error",
           error_description: "argument count mismatch",
         });
@@ -247,7 +242,7 @@ impl Compiler {
               byte_sum += 1;
             },
             None => {
-              return Err(CompilerError {
+              return Err(AssembleError {
                 error_type: "Value Error",
                 error_description: "could not parse argument",
               })
@@ -259,13 +254,13 @@ impl Compiler {
       let inst_size: usize = (inst.bytes_per_arg as usize * inst.num_args as usize) as usize;
 
       if byte_sum > inst_size {
-        return Err(CompilerError {
+        return Err(AssembleError {
           error_type: "Syntax Error",
           error_description: "argument(s) too many bytes",
         });
       }
       if byte_sum < inst_size {
-        return Err(CompilerError {
+        return Err(AssembleError {
           error_type: "Syntax Error",
           error_description: "argument(s) too few bytes",
         });
@@ -276,7 +271,7 @@ impl Compiler {
   }
 }
 
-impl Compiler {
+impl Assembler {
   fn parse_value(&self, to_parse: &str) -> Option<Vec<Byte>> {
     let mut result: Vec<Byte> = Vec::new();
     let to_compare = to_parse.trim();
@@ -335,7 +330,13 @@ impl Compiler {
         byte_value: 0,
         byte_label: to_compare.chars().skip(1).collect::<String>(),
         byte_attached_labels: vec![],
-      })
+      });
+      result.push(Byte {
+        byte_type: ByteType::LabelPadding,
+        byte_value: 0,
+        byte_label: to_compare.chars().skip(1).collect::<String>(),
+        byte_attached_labels: vec![],
+      });
     }
 
     if result.len() == 0 {

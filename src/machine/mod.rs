@@ -100,6 +100,37 @@ impl Machine {
   }
 }
 
+impl Machine {
+  fn format_memory(&self) -> String {
+    let mut result: String = String::new();
+    let mut first: bool = true;
+    let mut interesting_count: usize = 0;
+    for index in 0..65536 {
+      if self.memory[index] != 0 {
+        if interesting_count == 0 {
+          first = true;
+        }
+        interesting_count = 3;
+      }else if interesting_count > 0 {
+        interesting_count -= 1;
+        if interesting_count == 0 {
+          result += " ... ";
+        }
+      }
+      if interesting_count > 0 {
+        if first {
+          first = false;
+          result += format!("{:04x}: ", index).as_str();
+        }else{
+          result += " ";
+        }
+        result += format!("{:02x}", self.memory[index]).as_str();
+      }
+    }
+    return result;
+  }
+}
+
 impl fmt::Debug for Machine {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
@@ -108,12 +139,14 @@ impl fmt::Debug for Machine {
           acc: {},
           ip: {},
           stack: {:?},
-          flags: {:?}
+          flags: {:?},
+          memory: {}
         }}",
       self.accumulator,
       self.instruction_pointer,
       self.stack,
       self.flags,
+      self.format_memory(),
     )
   }
 }
