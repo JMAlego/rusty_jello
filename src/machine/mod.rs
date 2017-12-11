@@ -1,6 +1,9 @@
 //! Representation of the Rusty Jello machine
 
 use std::fmt;
+use instructions;
+use std::time::Duration;
+use std::thread;
 
 pub enum Register {
   R0 = 0,
@@ -18,7 +21,14 @@ pub struct Flags {
 
 impl fmt::Debug for Flags {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f,"{{halt: {}, carry: {}, overflow: {}, test: {}}}", self.halt, self.carry, self.overflow, self.test)
+    write!(
+      f,
+      "{{halt: {}, carry: {}, overflow: {}, test: {}}}",
+      self.halt,
+      self.carry,
+      self.overflow,
+      self.test
+    )
   }
 }
 
@@ -62,12 +72,12 @@ impl fmt::Debug for Stack {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let mut stack: String = String::new();
     for index in 0..self.stack_pointer {
-      stack += self.stack[index as usize].to_string().as_ref();
+      stack += format!("{:04x}", self.stack[index as usize]).as_str();
       if index + 1 != self.stack_pointer {
-        stack += ", ";
+        stack += " ";
       }
     }
-    write!(f,"{{{}}}", stack)
+    write!(f, "{{{}}}", stack)
   }
 }
 
@@ -79,6 +89,7 @@ pub struct Machine {
   pub stack: Stack,
   pub instruction_pointer_stack: Stack,
   pub flags: Flags,
+  pub clock_speed_hz: f64,
 }
 
 impl Machine {
@@ -96,6 +107,7 @@ impl Machine {
         overflow: false,
         test: false,
       },
+      clock_speed_hz: 0.0
     };
   }
 }
@@ -111,7 +123,7 @@ impl Machine {
           first = true;
         }
         interesting_count = 3;
-      }else if interesting_count > 0 {
+      } else if interesting_count > 0 {
         interesting_count -= 1;
         if interesting_count == 0 {
           result += " ... ";
@@ -121,13 +133,58 @@ impl Machine {
         if first {
           first = false;
           result += format!("{:04x}: ", index).as_str();
-        }else{
+        } else {
           result += " ";
         }
         result += format!("{:02x}", self.memory[index]).as_str();
       }
     }
     return result;
+  }
+}
+
+impl Machine {
+  pub fn step(&mut self) {
+    let loc: u8 = self.memory[self.instruction_pointer as usize];
+    if let Some(inst) = instructions::find_inst_by_opcode(&loc) {
+      (inst.run)(self);
+      if self.clock_speed_hz != 0.0 {
+        let instruction_speed: f64 = (1.0f64 / self.clock_speed_hz) * 1000.0f64;
+        thread::sleep(Duration::from_millis(instruction_speed as u64));
+      }
+    }
+  }
+}
+
+impl Machine {
+  pub fn format_inst(&mut self) -> String {
+    let loc: u8 = self.memory[self.instruction_pointer as usize];
+    if let Some(inst) = instructions::find_inst_by_opcode(&loc) {
+      let mut data: String = String::new();
+      let mut byte_count: u16 = 0;
+      for _ in 0..((inst.bytes_per_arg as usize) * (inst.num_args as usize)) {
+        if byte_count != 0 {
+          data += " ";
+          if byte_count % inst.bytes_per_arg as u16 == 0 {
+            data += ". ";
+          }
+        }
+        data += format!(
+          "{:02x}",
+          self.memory[(self.instruction_pointer + 1 + byte_count) as usize]
+        ).as_str();
+        byte_count += 1;
+      }
+      return format!(
+        "[{:04x}] {} ({:02x} | {})",
+        self.instruction_pointer,
+        inst.inst,
+        loc,
+        data
+      ).to_string();
+    } else {
+      return format!("Unknown Instruction {:2x}", loc).to_string();
+    }
   }
 }
 
@@ -142,8 +199,8 @@ impl fmt::Debug for Machine {
           flags: {:?},
           memory: {}
         }}",
-      self.accumulator,
-      self.instruction_pointer,
+      format!("{:04x}: ", self.accumulator),
+      format!("{:04x}: ", self.instruction_pointer),
       self.stack,
       self.flags,
       self.format_memory(),

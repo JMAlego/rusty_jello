@@ -10,7 +10,16 @@ pub struct Instruction<'x> {
   pub bytes_per_arg: u8,
 }
 
-pub fn find_inst(name: &str) -> Option<Instruction> {
+pub fn find_inst_by_opcode(op_code: &u8) -> Option<Instruction> {
+  for index in 0..INSTRUCTION_COUNT {
+    if INSTRUCTIONS[index].op_code == *op_code {
+      return Some(INSTRUCTIONS[index].clone());
+    }
+  }
+  return None;
+}
+
+pub fn find_inst_by_name(name: &str) -> Option<Instruction> {
   for index in 0..INSTRUCTION_COUNT {
     if INSTRUCTIONS[index].inst == name {
       return Some(INSTRUCTIONS[index].clone());

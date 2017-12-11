@@ -75,18 +75,18 @@ impl fmt::Debug for Label {
 }
 
 #[derive(Debug)]
-pub struct AssembleError<'a> {
-  error_type: &'a str,
-  error_description: &'a str,
+pub struct AssembleError {
+  error_type: String,
+  error_description: String,
 }
 
-impl<'a> fmt::Display for AssembleError<'a> {
+impl fmt::Display for AssembleError {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}: {}", self.error_type, self.error_description)
   }
 }
 
-impl<'a> Error for AssembleError<'a> {
+impl Error for AssembleError {
   fn description(&self) -> &str {
     "Compiler Error"
   }
@@ -206,21 +206,21 @@ impl Assembler {
     let inst: Instruction;
 
     if split_line.len() > 0 {
-      match instructions::find_inst(split_line[0]) {
+      match instructions::find_inst_by_name(split_line[0]) {
         Some(i) => {
           inst = i;
         }
         None => {
           return Err(AssembleError {
-            error_type: "Syntax Error",
-            error_description: "unknown instruction",
+            error_type: "Syntax Error".to_string(),
+            error_description: format!("unknown instruction \"{}\"", split_line[0]),
           })
         }
       }
       if inst.num_args as usize != split_line.len() - 1 {
         return Err(AssembleError {
-          error_type: "Syntax Error",
-          error_description: "argument count mismatch",
+          error_type: "Syntax Error".to_string(),
+          error_description: format!("argument count mismatch, expected {} but got {},", inst.num_args, split_line.len() - 1),
         });
       }
 
@@ -243,8 +243,8 @@ impl Assembler {
             },
             None => {
               return Err(AssembleError {
-                error_type: "Value Error",
-                error_description: "could not parse argument",
+                error_type: "Value Error".to_string(),
+                error_description: format!("could not parse argument \"{}\"", item),
               })
             }
           }
@@ -255,14 +255,14 @@ impl Assembler {
 
       if byte_sum > inst_size {
         return Err(AssembleError {
-          error_type: "Syntax Error",
-          error_description: "argument(s) too many bytes",
+          error_type: "Syntax Error".to_string(),
+          error_description: format!("argument(s) too many bytes, expected {} but got {},", inst_size, byte_sum),
         });
       }
       if byte_sum < inst_size {
         return Err(AssembleError {
-          error_type: "Syntax Error",
-          error_description: "argument(s) too few bytes",
+          error_type: "Syntax Error".to_string(),
+          error_description: format!("argument(s) too few bytes, expected {} but got {},", inst_size, byte_sum),
         });
       }
     }

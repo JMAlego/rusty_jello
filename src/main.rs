@@ -104,31 +104,59 @@ fn main() {
   }
 
   match file.read_to_string(&mut code) {
-    Ok(..) => println!("File read"),
+    Ok(..) => println!("Done."),
     Err(err) => {
       println!("Error reading file, {:?}", err);
       return;
     }
   }
 
-  let mut machine: Machine = Machine::new();
   let mut assembler: Assembler = Assembler::new();
-  assembler.add_string("LOADI :test\nLOADI 0x00ff\nNOOP\nNOOP\nNOOP\nNOOP\nNOOP\n:test\nLOADI 0x1234");
+  let bytecode: Vec<u8>;
+
+  print!("Assembling file... ");
+
+  assembler.add_string(code.as_str());
 
   match assembler.assemble() {
-    Ok(bytecode) => {
-      let mut pointer: usize = 0;
-      for byte in bytecode {
-        machine.memory[pointer] = byte;
-        pointer += 1;
-      }
+    Ok(generated_bytecode) => {
+      bytecode = generated_bytecode;
     }
     Err(err) => {
+      println!("Failed!");
       println!("{}", err);
       return;
     }
   }
 
-  println!("{:?}", machine);
+  println!("Done.");
 
+  print!("Loading bytecode into virtual machine... ");
+
+  let mut machine: Machine = Machine::new();
+  machine.clock_speed_hz = tick_rate;
+
+  let mut pointer: usize = 0;
+  for byte in bytecode {
+    machine.memory[pointer] = byte;
+    pointer += 1;
+  }
+
+  println!("Done.");
+
+  println!("Running virtual machine until halt... ");
+
+  println!("Initial {:?}", machine);
+  while !machine.flags.halt {
+    if debug_level > 1 {
+      println!("{:?}", machine);
+    }
+    if debug_level > 0 {
+      println!("{}", machine.format_inst());
+    }
+    machine.step();
+  }
+  println!("Final {:?}", machine);
+
+  println!("Done.");
 }
