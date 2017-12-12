@@ -21,14 +21,14 @@ pub fn find_inst_by_opcode(op_code: &u8) -> Option<Instruction> {
 
 pub fn find_inst_by_name(name: &str) -> Option<Instruction> {
   for index in 0..INSTRUCTION_COUNT {
-    if INSTRUCTIONS[index].inst == name {
+    if INSTRUCTIONS[index].inst == name.to_uppercase() {
       return Some(INSTRUCTIONS[index].clone());
     }
   }
   return None;
 }
 
-pub const INSTRUCTION_COUNT: usize = 19;
+pub const INSTRUCTION_COUNT: usize = 40;
 
 pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
   Instruction {
@@ -38,7 +38,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     run: &|machine: &mut Machine| {
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
     inst: "HALT",
@@ -47,10 +47,10 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     run: &|machine: &mut Machine| {
       machine.flags.halt = true;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "LOADI",
+    inst: "LRI",
     num_args: 1,
     op_code: 0x10,
     run: &|machine: &mut Machine| {
@@ -61,87 +61,87 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.accumulator = part1 | part2;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 2
+    bytes_per_arg: 2,
   },
   Instruction {
-    inst: "LOADA",
+    inst: "LR0",
     num_args: 0,
     op_code: 0x11,
     run: &|machine: &mut Machine| {
       machine.accumulator = machine.registers[0];
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "LOADB",
+    inst: "LR1",
     num_args: 0,
     op_code: 0x12,
     run: &|machine: &mut Machine| {
       machine.accumulator = machine.registers[1];
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "LOADC",
+    inst: "LR2",
     num_args: 0,
     op_code: 0x13,
     run: &|machine: &mut Machine| {
       machine.accumulator = machine.registers[2];
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "LOADD",
+    inst: "LR3",
     num_args: 0,
     op_code: 0x14,
     run: &|machine: &mut Machine| {
       machine.accumulator = machine.registers[3];
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "STORA",
+    inst: "SR0",
     num_args: 0,
     op_code: 0x15,
     run: &|machine: &mut Machine| {
       machine.registers[0] = machine.accumulator;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "STORB",
+    inst: "SR1",
     num_args: 0,
     op_code: 0x16,
     run: &|machine: &mut Machine| {
       machine.registers[1] = machine.accumulator;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "STORC",
+    inst: "SR2",
     num_args: 0,
     op_code: 0x17,
     run: &|machine: &mut Machine| {
       machine.registers[2] = machine.accumulator;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "STORD",
+    inst: "SR3",
     num_args: 0,
     op_code: 0x18,
     run: &|machine: &mut Machine| {
       machine.registers[3] = machine.accumulator;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
     inst: "ZERO",
@@ -151,10 +151,10 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.accumulator = 0;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
-    inst: "LOADS",
+    inst: "LRS",
     num_args: 1,
     op_code: 0x1a,
     run: &|machine: &mut Machine| {
@@ -162,7 +162,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.accumulator = machine.memory[machine.instruction_pointer as usize] as u16;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 1
+    bytes_per_arg: 1,
   },
   Instruction {
     inst: "ADD",
@@ -176,14 +176,14 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       if result > 65535 {
         carry = true;
         result = result % 65536;
-      }else{
+      } else {
         carry = false;
       }
       machine.accumulator = result as u16;
       machine.flags.carry = carry;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
     inst: "ADDC",
@@ -192,19 +192,19 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     run: &|machine: &mut Machine| {
       let input1: u16 = machine.stack.pop();
       let input2: u16 = machine.stack.pop();
-      let mut result: u32 = input1 as u32 + input2 as u32 + if machine.flags.carry {1} else {0};
+      let mut result: u32 = input1 as u32 + input2 as u32 + if machine.flags.carry { 1 } else { 0 };
       let carry: bool;
-      if result > 65535 { 
+      if result > 65535 {
         carry = true;
         result = result % 65536;
-      }else{
+      } else {
         carry = false;
       }
       machine.accumulator = result as u16;
       machine.flags.carry = carry;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
     inst: "SUB",
@@ -218,14 +218,14 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       if result < 0 {
         carry = true;
         result = 65536 + result;
-      }else{
+      } else {
         carry = false;
       }
       machine.accumulator = result as u16;
       machine.flags.carry = carry;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
     inst: "SUBC",
@@ -234,19 +234,116 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     run: &|machine: &mut Machine| {
       let input1: u16 = machine.stack.pop();
       let input2: u16 = machine.stack.pop();
-      let mut result: i32 = input1 as i32 - input2 as i32 + if machine.flags.carry {-1} else {0};
+      let mut result: i32 =
+        input1 as i32 - input2 as i32 + if machine.flags.carry { -1 } else { 0 };
       let carry: bool;
       if result < 0 {
         carry = true;
         result = 65536 + result;
-      }else{
+      } else {
         carry = false;
       }
       machine.accumulator = result as u16;
       machine.flags.carry = carry;
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "NEG",
+    num_args: 0,
+    op_code: 0x24,
+    run: &|machine: &mut Machine| {
+      let input1: u16 = machine.stack.pop();
+      machine.accumulator = input1 ^ 65535;
+      machine.accumulator = (machine.accumulator as u32 + 1u32) as u16;
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "MUL",
+    num_args: 0,
+    op_code: 0x25,
+    run: &|machine: &mut Machine| {
+      let input1: u16 = machine.stack.pop();
+      let input2: u16 = machine.stack.pop();
+      let mut result: u64 = input1 as u64 * input2 as u64;
+      let overflow: bool;
+      if result > 65535 {
+        overflow = true;
+        result = 65535;
+      } else {
+        overflow = false;
+      }
+      machine.accumulator = result as u16;
+      machine.flags.overflow = overflow;
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "DIV",
+    num_args: 0,
+    op_code: 0x26,
+    run: &|machine: &mut Machine| {
+      let input1: u16 = machine.stack.pop();
+      let input2: u16 = machine.stack.pop();
+      let result: u16 = input1 as u16 / input2 as u16;
+      machine.accumulator = result as u16;
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "ADDI",
+    num_args: 1,
+    op_code: 0x27,
+    run: &|machine: &mut Machine| {
+      let input1: u16 = machine.stack.pop();
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+      let mut result: u32 = input1 as u32 + immediate as u32;
+      let carry: bool;
+      if result > 65535 {
+        carry = true;
+        result = result % 65536;
+      } else {
+        carry = false;
+      }
+      machine.accumulator = result as u16;
+      machine.flags.carry = carry;
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "SUBI",
+    num_args: 1,
+    op_code: 0x28,
+    run: &|machine: &mut Machine| {
+      let input1: u16 = machine.stack.pop();
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+      let mut result: i32 = input1 as i32 - immediate as i32;
+      let carry: bool;
+      if result < 0 {
+        carry = true;
+        result = 65536 + result;
+      } else {
+        carry = false;
+      }
+      machine.accumulator = result as u16;
+      machine.flags.carry = carry;
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 2,
   },
   Instruction {
     inst: "PUSH",
@@ -256,7 +353,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.stack.push(machine.accumulator);
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
   },
   Instruction {
     inst: "POP",
@@ -266,6 +363,244 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.accumulator = machine.stack.pop();
       machine.instruction_pointer += 1;
     },
-    bytes_per_arg: 0
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "SWAP",
+    num_args: 0,
+    op_code: 0x32,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      machine.stack.push(first);
+      machine.stack.push(second);
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "PEAK",
+    num_args: 0,
+    op_code: 0x33,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      machine.stack.push(first);
+      machine.accumulator = first;
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "SPILL",
+    num_args: 0,
+    op_code: 0x34,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      machine.stack.pop();
+      machine.stack.push(first);
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "DROP",
+    num_args: 0,
+    op_code: 0x35,
+    run: &|machine: &mut Machine| {
+      machine.stack.pop();
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "UNDER",
+    num_args: 0,
+    op_code: 0x36,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      machine.stack.push(machine.accumulator);
+      machine.stack.push(first);
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "ROTCW",
+    num_args: 0,
+    op_code: 0x37,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      let third: u16 = machine.stack.pop();
+      machine.stack.push(second);
+      machine.stack.push(first);
+      machine.stack.push(third);
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "ROTAC",
+    num_args: 0,
+    op_code: 0x38,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      let third: u16 = machine.stack.pop();
+      machine.stack.push(first);
+      machine.stack.push(third);
+      machine.stack.push(second);
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "DUP",
+    num_args: 0,
+    op_code: 0x39,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      machine.stack.push(first);
+      machine.stack.push(first);
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "PUSHI",
+    num_args: 1,
+    op_code: 0x3a,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+      machine.stack.push(immediate);
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "JMPI",
+    num_args: 1,
+    op_code: 0x40,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+      machine.instruction_pointer = immediate;
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "JMPIG",
+    num_args: 1,
+    op_code: 0x41,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+      
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      machine.stack.push(second);
+      machine.stack.push(first);
+      if first > second {
+        machine.instruction_pointer = immediate;
+      }else{
+        machine.instruction_pointer += 1;
+      }
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "JMPIL",
+    num_args: 1,
+    op_code: 0x42,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      machine.stack.push(second);
+      machine.stack.push(first);
+      if first < second {
+        machine.instruction_pointer = immediate;
+      }else{
+        machine.instruction_pointer += 1;
+      }
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "JMPIE",
+    num_args: 1,
+    op_code: 0x43,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      machine.stack.push(second);
+      machine.stack.push(first);
+      if first == second {
+        machine.instruction_pointer = immediate;
+      }else{
+        machine.instruction_pointer += 1;
+      }
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "JMPIT",
+    num_args: 1,
+    op_code: 0x44,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+
+      if machine.flags.test {
+        machine.instruction_pointer = immediate;
+      }else{
+        machine.instruction_pointer += 1;
+      }
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "TESTC",
+    num_args: 0,
+    op_code: 0x81,
+    run: &|machine: &mut Machine| {
+     machine.flags.test = machine.flags.carry;
+     machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "TESTO",
+    num_args: 0,
+    op_code: 0x82,
+    run: &|machine: &mut Machine| {
+     machine.flags.test = machine.flags.overflow;
+     machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
   },
 ];

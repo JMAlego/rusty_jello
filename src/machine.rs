@@ -72,9 +72,9 @@ impl fmt::Debug for Stack {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let mut stack: String = String::new();
     for index in 0..self.stack_pointer {
-      stack += format!("{:04x}", self.stack[index as usize]).as_str();
+      stack = format!("{:04x}", self.stack[index as usize]) + stack.as_str();
       if index + 1 != self.stack_pointer {
-        stack += " ";
+        stack = " ".to_string() + stack.as_str();
       }
     }
     write!(f, "{{{}}}", stack)
