@@ -14,6 +14,7 @@ use std::fs::File;
 use std::path::Path;
 use std::io::prelude::*;
 use std::io::ErrorKind;
+use std::time::Instant;
 
 fn main() {
   println!("Rusty Jello v0.7.0 (Rumbustious) by Jacob Allen");
@@ -118,6 +119,7 @@ fn main() {
 
   assembler.add_string(code.as_str());
 
+  let assembly_start_time = Instant::now();
   match assembler.assemble() {
     Ok(generated_bytecode) => {
       bytecode = generated_bytecode;
@@ -129,7 +131,14 @@ fn main() {
     }
   }
 
+  let assembly_elapsed: f64 = assembly_start_time.elapsed().as_secs() as f64
+    + (assembly_start_time.elapsed().subsec_nanos() as f64 / 10_000_000f64);
+
   println!("Done.");
+
+  if debug_level > 0 {
+    println!("Assembly took {} seconds", assembly_elapsed);
+  }
 
   print!("Loading bytecode into virtual machine... ");
 
@@ -147,6 +156,7 @@ fn main() {
   println!("Running virtual machine until halt... ");
 
   println!("Initial {:?}", machine);
+  let execution_start_time = Instant::now();
   while !machine.flags.halt {
     if debug_level > 1 {
       println!("{:?}", machine);
@@ -156,7 +166,13 @@ fn main() {
     }
     machine.step();
   }
+  let execution_elapsed: f64 = execution_start_time.elapsed().as_secs() as f64
+    + (execution_start_time.elapsed().subsec_nanos() as f64 / 10_000_000f64);
   println!("Final {:?}", machine);
+
+  if debug_level > 0 {
+    println!("Execution took {} seconds", execution_elapsed);
+  }
 
   println!("Done.");
 }

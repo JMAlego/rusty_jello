@@ -28,7 +28,7 @@ pub fn find_inst_by_name(name: &str) -> Option<Instruction> {
   return None;
 }
 
-pub const INSTRUCTION_COUNT: usize = 40;
+pub const INSTRUCTION_COUNT: usize = 51;
 
 pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
   Instruction {
@@ -580,6 +580,155 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }else{
         machine.instruction_pointer += 1;
       }
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "JMP",
+    num_args: 0,
+    op_code: 0x45,
+    run: &|machine: &mut Machine| {
+      let address: u16 = machine.stack.pop();
+
+      machine.instruction_pointer = address;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "JMPGT",
+    num_args: 0,
+    op_code: 0x46,
+    run: &|machine: &mut Machine| {
+      let address: u16 = machine.stack.pop();
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      machine.stack.push(second);
+      machine.stack.push(first);
+
+      if first > second {
+        machine.instruction_pointer = address;
+      }else{
+        machine.instruction_pointer += 1;
+      }
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "JMPLT",
+    num_args: 0,
+    op_code: 0x47,
+    run: &|machine: &mut Machine| {
+      let address: u16 = machine.stack.pop();
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      machine.stack.push(second);
+      machine.stack.push(first);
+
+      if first < second {
+        machine.instruction_pointer = address;
+      }else{
+        machine.instruction_pointer += 1;
+      }
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "JMPEQ",
+    num_args: 0,
+    op_code: 0x48,
+    run: &|machine: &mut Machine| {
+      let address: u16 = machine.stack.pop();
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      machine.stack.push(second);
+      machine.stack.push(first);
+
+      if first == second {
+        machine.instruction_pointer = address;
+      }else{
+        machine.instruction_pointer += 1;
+      }
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "JMPT",
+    num_args: 0,
+    op_code: 0x49,
+    run: &|machine: &mut Machine| {
+      let address: u16 = machine.stack.pop();
+
+      if machine.flags.test {
+        machine.instruction_pointer = address;
+      }else{
+        machine.instruction_pointer += 1;
+      }
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "PUSHI",
+    num_args: 0,
+    op_code: 0x4a,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer_stack.push(machine.instruction_pointer);
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "POPI",
+    num_args: 0,
+    op_code: 0x4b,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer = machine.instruction_pointer_stack.pop();
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "CALL",
+    num_args: 0,
+    op_code: 0x4c,
+    run: &|machine: &mut Machine| {
+      let address: u16 = machine.stack.pop();
+
+      machine.instruction_pointer_stack.push(machine.instruction_pointer);
+      machine.instruction_pointer = address;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "RET",
+    num_args: 0,
+    op_code: 0x4d,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer = machine.instruction_pointer_stack.pop();
+      machine.instruction_pointer += 1;
+    },
+    bytes_per_arg: 0,
+  },
+  Instruction {
+    inst: "CALLI",
+    num_args: 1,
+    op_code: 0x4e,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer += 1;
+      let part1: u16 = machine.memory[machine.instruction_pointer as usize] as u16;
+      machine.instruction_pointer += 1;
+      let part2: u16 = (machine.memory[machine.instruction_pointer as usize] as u16) << 8;
+      let immediate = part1 | part2;
+
+      machine.instruction_pointer_stack.push(machine.instruction_pointer);
+      machine.instruction_pointer = immediate;
+    },
+    bytes_per_arg: 2,
+  },
+  Instruction {
+    inst: "SKIP",
+    num_args: 1,
+    op_code: 0x4f,
+    run: &|machine: &mut Machine| {
+      machine.instruction_pointer += 2;
     },
     bytes_per_arg: 2,
   },
