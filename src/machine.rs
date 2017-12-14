@@ -195,12 +195,14 @@ impl fmt::Debug for Machine {
       "Machine {{
           acc: {},
           ip: {},
+          ip_stack: {:?},
           stack: {:?},
           flags: {:?},
           memory: {}
         }}",
       format!("{:04x}: ", self.accumulator),
       format!("{:04x}: ", self.instruction_pointer),
+      self.instruction_pointer_stack,
       self.stack,
       self.flags,
       self.format_memory(),
