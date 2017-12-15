@@ -179,6 +179,8 @@ fn main() {
     println!("Running virtual machine until halt... ");
 
     println!("Initial {:?}", machine);
+    println!();
+    println!("---Program Output Start---");
     let execution_start_time = Instant::now();
     while !machine.flags.halt {
       if debug_level > 1 {
@@ -192,6 +194,9 @@ fn main() {
     let execution_duration: Duration = execution_start_time.elapsed();
     let execution_elapsed: f64 =
       execution_duration.as_secs() as f64 + execution_duration.subsec_nanos() as f64 * 1e-9;
+    println!();
+    println!("----Program Output End----");
+    println!();
     println!("Final {:?}", machine);
 
     if measure_time {

@@ -1,0 +1,6 @@
+PUSHI 0xff00
+PUSHI 0xff0f
+NOT
+PUSH
+XOR
+HALT
