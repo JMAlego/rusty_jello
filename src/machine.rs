@@ -107,7 +107,7 @@ impl Machine {
         overflow: false,
         test: false,
       },
-      clock_speed_hz: 0.0
+      clock_speed_hz: 0.0,
     };
   }
 }
@@ -126,13 +126,13 @@ impl Machine {
       } else if interesting_count > 0 {
         interesting_count -= 1;
         if interesting_count == 0 {
-          result += " ... ";
+          result += format!(" [{:04x}] ... ", index).as_str();
         }
       }
       if interesting_count > 0 {
         if first {
           first = false;
-          result += format!("{:04x}: ", index).as_str();
+          result += format!("[{:04x}] ", index).as_str();
         } else {
           result += " ";
         }
@@ -149,7 +149,8 @@ impl Machine {
     if let Some(inst) = instructions::find_inst_by_opcode(&loc) {
       (inst.run)(self);
       if self.clock_speed_hz != 0.0 {
-        let instruction_speed: f64 = (1.0f64 / self.clock_speed_hz) * 1000.0f64;
+        let instruction_speed: f64 =
+          (inst.clock_cycles as f64) * (1.0f64 / self.clock_speed_hz) * 1000.0f64;
         thread::sleep(Duration::from_millis(instruction_speed as u64));
       }
     }

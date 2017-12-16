@@ -18,8 +18,6 @@ use std::time::Instant;
 use std::time::Duration;
 
 fn main() {
-  println!("Rusty Jello v0.7.0 (Rumbustious) by Jacob Allen");
-
   let args: Args = Args::new(
     env::args().collect(),
     vec![
@@ -27,12 +25,19 @@ fn main() {
       "-h".to_string(),
       "-a".to_string(),
       "-m".to_string(),
+      "-q".to_string(),
     ],
   );
   let mut input_file: String = "".to_string();
   let mut output_file: String = "a.ja".to_string();
   let debug_level: u8;
   let tick_rate: f64;
+
+  let quiet_mode: bool = args.has_arg("-q");
+
+  if !quiet_mode {
+    println!("Rusty Jello v0.7.0 (Rumbustious) by Jacob Allen");
+  }
 
   if args.has_arg("") {
     if args.count_arg("") > 1 {
@@ -52,6 +57,7 @@ fn main() {
     println!("  -h: Displays this help section");
     println!("  -a: Assemble only");
     println!("  -m: Measure time");
+    println!("  -q: Show only program output");
     println!("Options:");
     println!("  -dbl: Sets the debug level, can be 0 to 2  (default: 0)");
     println!("  -t: Sets internal clock rate in hertz (default: 0)");
@@ -107,7 +113,9 @@ fn main() {
     return;
   }
 
-  print!("Reading file... ");
+  if !quiet_mode {
+    print!("Reading file... ");
+  }
 
   let mut file: File;
   let input_file_path: &Path = Path::new(&input_file);
@@ -126,7 +134,9 @@ fn main() {
   }
 
   match file.read_to_string(&mut code) {
-    Ok(..) => println!("Done."),
+    Ok(..) => if !quiet_mode {
+      println!("Done.");
+    },
     Err(err) => {
       println!("Error reading file, {:?}", err);
       return;
@@ -136,7 +146,9 @@ fn main() {
   let mut assembler: Assembler = Assembler::new();
   let bytecode: Vec<u8>;
 
-  print!("Assembling file... ");
+  if !quiet_mode {
+    print!("Assembling file... ");
+  }
 
   assembler.add_string(code.as_str());
 
@@ -156,14 +168,18 @@ fn main() {
   let assembly_elapsed: f64 =
     assembly_duration.as_secs() as f64 + assembly_duration.subsec_nanos() as f64 * 1e-9;
 
-  println!("Done.");
+  if !quiet_mode {
+    println!("Done.");
+  }
 
   if measure_time {
     println!("Assembly took {:.8} seconds", assembly_elapsed);
   }
 
   if !assemble_mode {
-    print!("Loading bytecode into virtual machine... ");
+    if !quiet_mode {
+      print!("Loading bytecode into virtual machine... ");
+    }
 
     let mut machine: Machine = Machine::new();
     machine.clock_speed_hz = tick_rate;
@@ -174,13 +190,19 @@ fn main() {
       pointer += 1;
     }
 
-    println!("Done.");
+    if !quiet_mode {
+      println!("Done.");
+    }
 
-    println!("Running virtual machine until halt... ");
+    if !quiet_mode {
+      println!("Running virtual machine until halt... ");
+    }
 
-    println!("Initial {:?}", machine);
-    println!();
-    println!("---Program Output Start---");
+    if !quiet_mode {
+      println!("Initial {:?}", machine);
+      println!();
+      println!("---Program Output Start---");
+    }
     let execution_start_time = Instant::now();
     while !machine.flags.halt {
       if debug_level > 1 {
@@ -194,16 +216,20 @@ fn main() {
     let execution_duration: Duration = execution_start_time.elapsed();
     let execution_elapsed: f64 =
       execution_duration.as_secs() as f64 + execution_duration.subsec_nanos() as f64 * 1e-9;
-    println!();
-    println!("----Program Output End----");
-    println!();
-    println!("Final {:?}", machine);
+    if !quiet_mode {
+      println!();
+      println!("----Program Output End----");
+      println!();
+      println!("Final {:?}", machine);
+    }
 
     if measure_time {
       println!("Execution took {:.8} seconds", execution_elapsed);
     }
 
-    println!("Done.");
+    if !quiet_mode {
+      println!("Done.");
+    }
   } else {
     let mut out_file: File;
     let output_file_path: &Path = Path::new(&output_file);
@@ -219,10 +245,14 @@ fn main() {
       }
     }
 
-    print!("Writing file... ");
+    if !quiet_mode {
+      print!("Writing file... ");
+    }
 
     match out_file.write(&bytecode) {
-      Ok(..) => println!("Done."),
+      Ok(..) => if !quiet_mode {
+        println!("Done.");
+      },
       Err(err) => {
         println!("Error writing file, {:?}", err);
         return;

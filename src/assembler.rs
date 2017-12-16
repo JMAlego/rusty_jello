@@ -198,7 +198,7 @@ impl Assembler {
         Err(err) => return Err(format!("{} on line {}", err, line_counter).to_string()),
       }
     }
-    for entry in data_entries{
+    for entry in data_entries {
       let (address, data) = entry;
       if result.len() >= address as usize {
         return Err(format!("Data attempted to overwrite address at {:04x}", address).to_string());
@@ -206,7 +206,7 @@ impl Assembler {
       while result.len() < address as usize {
         result.push(Byte::from_u8(0x00));
       }
-      for data_byte in data{
+      for data_byte in data {
         result.push(data_byte);
       }
     }
@@ -447,15 +447,18 @@ impl Assembler {
         if chr == '"' && !escape {
           complete = true;
           break;
-        }else if chr == '0' && escape {
+        } else if chr == '0' && escape {
           escape = false;
           result.push(Byte::from_u8(0));
-        }else if chr == 'n' && escape {
+        } else if chr == 'n' && escape {
           escape = false;
           result.push(Byte::from_u8('\n' as u8));
-        }else if chr == 'r' && escape {
+        } else if chr == 'r' && escape {
           escape = false;
           result.push(Byte::from_u8('\r' as u8));
+        } else if chr == 't' && escape {
+          escape = false;
+          result.push(Byte::from_u8('\t' as u8));
         } else if chr == '\\' {
           if escape {
             result.push(Byte::from_u8(chr as u8));

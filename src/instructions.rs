@@ -1,5 +1,6 @@
 //! Module for storing instruction definitions
 use machine::Machine;
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct Instruction<'x> {
@@ -8,6 +9,7 @@ pub struct Instruction<'x> {
   pub op_code: u8,
   pub run: &'x Fn(&mut Machine),
   pub bytes_per_arg: u8,
+  pub clock_cycles: usize,
 }
 
 pub fn find_inst_by_opcode(op_code: &u8) -> Option<Instruction> {
@@ -28,7 +30,7 @@ pub fn find_inst_by_name(name: &str) -> Option<Instruction> {
   return None;
 }
 
-pub const INSTRUCTION_COUNT: usize = 93;
+pub const INSTRUCTION_COUNT: usize = 95;
 
 pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
   Instruction {
@@ -39,6 +41,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "HALT",
@@ -48,6 +51,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.flags.halt = true;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LRI",
@@ -62,6 +66,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "LR0",
@@ -72,6 +77,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LR1",
@@ -82,6 +88,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LR2",
@@ -92,6 +99,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LR3",
@@ -102,6 +110,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "SR0",
@@ -112,6 +121,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "SR1",
@@ -122,6 +132,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "SR2",
@@ -132,6 +143,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "SR3",
@@ -142,6 +154,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "ZERO",
@@ -152,6 +165,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LRS",
@@ -163,6 +177,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 1,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "ADD",
@@ -184,6 +199,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "ADDC",
@@ -205,6 +221,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "SUB",
@@ -226,6 +243,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "SUBC",
@@ -248,6 +266,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "NEG",
@@ -260,6 +279,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "MUL",
@@ -281,6 +301,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "DIV",
@@ -294,6 +315,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "ADDI",
@@ -319,6 +341,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "SUBI",
@@ -344,6 +367,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "PUSH",
@@ -354,6 +378,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "POP",
@@ -364,6 +389,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "SWAP",
@@ -377,6 +403,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "PEAK",
@@ -389,6 +416,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "SPILL",
@@ -401,6 +429,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DROP",
@@ -411,6 +440,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "UNDER",
@@ -423,6 +453,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "ROTCW",
@@ -438,6 +469,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "ROTAC",
@@ -453,6 +485,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "DUP",
@@ -465,6 +498,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "PUSHI",
@@ -480,6 +514,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "JMPI",
@@ -494,6 +529,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = immediate;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "JMPIG",
@@ -517,6 +553,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }
     },
     bytes_per_arg: 2,
+    clock_cycles: 4,
   },
   Instruction {
     inst: "JMPIL",
@@ -540,6 +577,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }
     },
     bytes_per_arg: 2,
+    clock_cycles: 4,
   },
   Instruction {
     inst: "JMPIE",
@@ -563,6 +601,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }
     },
     bytes_per_arg: 2,
+    clock_cycles: 4,
   },
   Instruction {
     inst: "JMPIT",
@@ -582,6 +621,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "JMP",
@@ -593,6 +633,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = address;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "JMPGT",
@@ -612,6 +653,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }
     },
     bytes_per_arg: 0,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "JMPLT",
@@ -631,6 +673,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }
     },
     bytes_per_arg: 0,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "JMPEQ",
@@ -650,6 +693,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }
     },
     bytes_per_arg: 0,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "JMPT",
@@ -665,6 +709,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       }
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "PUSHI",
@@ -677,6 +722,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "POPI",
@@ -686,6 +732,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = machine.instruction_pointer_stack.pop();
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "CALL",
@@ -700,6 +747,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = address;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "RET",
@@ -710,6 +758,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "CALLI",
@@ -728,6 +777,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = immediate;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "SKIP",
@@ -737,6 +787,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer += 2;
     },
     bytes_per_arg: 2,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LOAD",
@@ -753,6 +804,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "STORE",
@@ -770,6 +822,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "LOADI",
@@ -790,6 +843,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 5,
   },
   Instruction {
     inst: "STOREI",
@@ -811,6 +865,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 5,
   },
   Instruction {
     inst: "OR",
@@ -824,6 +879,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "AND",
@@ -837,6 +893,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "XOR",
@@ -850,6 +907,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "NAND",
@@ -863,6 +921,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "NOR",
@@ -876,6 +935,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "NOT",
@@ -888,6 +948,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LSFT0",
@@ -900,6 +961,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "RSFT0",
@@ -912,6 +974,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LSFT1",
@@ -924,6 +987,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "RSFT1",
@@ -936,6 +1000,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "ORI",
@@ -955,6 +1020,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "ANDI",
@@ -974,6 +1040,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "XORI",
@@ -993,6 +1060,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "NANDI",
@@ -1012,6 +1080,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "NORI",
@@ -1031,6 +1100,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
   },
   Instruction {
     inst: "INC",
@@ -1044,6 +1114,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "INC2",
@@ -1057,6 +1128,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "INC3",
@@ -1070,6 +1142,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "INC4",
@@ -1083,6 +1156,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DEC",
@@ -1096,6 +1170,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DEC2",
@@ -1109,6 +1184,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DEC3",
@@ -1122,6 +1198,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DEC4",
@@ -1135,6 +1212,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "INCP",
@@ -1148,6 +1226,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "INC2P",
@@ -1161,6 +1240,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "INC3P",
@@ -1174,6 +1254,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "INC4P",
@@ -1187,6 +1268,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DECP",
@@ -1202,6 +1284,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DEC2P",
@@ -1217,6 +1300,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DEC3P",
@@ -1232,6 +1316,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "DEC4P",
@@ -1247,6 +1332,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "TEST",
@@ -1257,6 +1343,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "TESTC",
@@ -1267,6 +1354,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "TESTO",
@@ -1277,6 +1365,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "LSFTB",
@@ -1288,6 +1377,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "RSFTB",
@@ -1299,6 +1389,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "PRN",
@@ -1310,6 +1401,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "PRNI",
@@ -1323,6 +1415,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 1,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "PRN2",
@@ -1335,6 +1428,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
+    clock_cycles: 1,
   },
   Instruction {
     inst: "PRN2I",
@@ -1351,5 +1445,30 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
+    clock_cycles: 3,
+  },
+  Instruction {
+    inst: "DUMP8",
+    num_args: 0,
+    op_code: 0xf4,
+    run: &|machine: &mut Machine| {
+      let popped = machine.stack.pop();
+      print!("0x{:02x}", (popped & 0x00ff) as u8);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 1,
+  },
+  Instruction {
+    inst: "DUMP16",
+    num_args: 0,
+    op_code: 0xf5,
+    run: &|machine: &mut Machine| {
+      let popped = machine.stack.pop();
+      print!("0x{:04x}", popped);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 1,
   },
 ];
