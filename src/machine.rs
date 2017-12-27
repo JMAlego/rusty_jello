@@ -32,6 +32,100 @@ impl fmt::Debug for Flags {
   }
 }
 
+pub struct SerialBuffer {
+  buffer: Vec<u8>,
+}
+
+impl SerialBuffer {
+  pub fn new() -> SerialBuffer {
+    return SerialBuffer { buffer: Vec::new() };
+  }
+}
+
+impl SerialBuffer {
+  pub fn put(&mut self, item: u8) -> bool {
+    if self.buffer.len() == 256 {
+      return false;
+    }
+    self.buffer.insert(0, item);
+    return true;
+  }
+}
+
+impl SerialBuffer {
+  pub fn put_char(&mut self, item: char) -> bool {
+    if self.buffer.len() == 256 {
+      return false;
+    }
+    self.buffer.insert(0, item as u8);
+    return true;
+  }
+}
+
+impl SerialBuffer {
+  pub fn put_string(&mut self, items: String) -> bool {
+    for item in items.chars() {
+      if self.buffer.len() == 256 {
+        return false;
+      }
+      self.buffer.insert(0, item as u8);
+    }
+    return true;
+  }
+}
+
+impl SerialBuffer {
+  pub fn put_all(&mut self, items: Vec<u8>) -> bool {
+    for item in items {
+      if self.buffer.len() == 256 {
+        return false;
+      }
+      self.buffer.insert(0, item);
+    }
+    return true;
+  }
+}
+
+impl SerialBuffer {
+  pub fn put_all_char(&mut self, items: Vec<char>) -> bool {
+    for item in items {
+      if self.buffer.len() == 256 {
+        return false;
+      }
+      self.buffer.insert(0, item as u8);
+    }
+    return true;
+  }
+}
+
+impl SerialBuffer {
+  pub fn take(&mut self) -> Option<u8> {
+    self.buffer.pop()
+  }
+}
+
+impl SerialBuffer {
+  pub fn take_all(&mut self) -> Vec<u8> {
+    let mut result: Vec<u8> = Vec::new();
+    while self.buffer.len() > 0 {
+      result.push(self.buffer.pop().unwrap());
+    }
+    return result;
+  }
+}
+
+impl SerialBuffer {
+  pub fn clear(&mut self) {
+    self.buffer.clear()
+  }
+}
+
+impl SerialBuffer {
+  pub fn has_bytes(&self) -> bool {
+    self.buffer.len() > 0
+  }
+}
+
 pub struct Stack {
   stack_pointer: u8,
   stack: [u16; 16],
@@ -90,6 +184,8 @@ pub struct Machine {
   pub instruction_pointer_stack: Stack,
   pub flags: Flags,
   pub clock_speed_hz: f64,
+  pub output_buffer: SerialBuffer,
+  pub input_buffer: SerialBuffer,
 }
 
 impl Machine {
@@ -108,6 +204,8 @@ impl Machine {
         test: false,
       },
       clock_speed_hz: 0.0,
+      output_buffer: SerialBuffer::new(),
+      input_buffer: SerialBuffer::new(),
     };
   }
 }

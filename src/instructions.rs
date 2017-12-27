@@ -1,6 +1,5 @@
 //! Module for storing instruction definitions
 use machine::Machine;
-use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct Instruction<'x> {
@@ -1397,7 +1396,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     op_code: 0xf0,
     run: &|machine: &mut Machine| {
       let popped = machine.stack.pop();
-      print!("{}", ((popped & 0x00ff) as u8) as char);
+      machine.output_buffer.put((popped & 0x00ff) as u8);
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
@@ -1411,7 +1410,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
       let immediate: u8 = machine.memory[machine.instruction_pointer as usize];
 
-      print!("{}", immediate as char);
+      machine.output_buffer.put(immediate);
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 1,
@@ -1423,8 +1422,8 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     op_code: 0xf2,
     run: &|machine: &mut Machine| {
       let popped = machine.stack.pop();
-      print!("{}", ((popped & 0x00ff) as u8) as char);
-      print!("{}", (((popped >> 8) & 0x00ff) as u8) as char);
+      machine.output_buffer.put((popped & 0x00ff) as u8);
+      machine.output_buffer.put(((popped >> 8) & 0x00ff) as u8);
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
@@ -1440,8 +1439,8 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
       let part2: u8 = machine.memory[machine.instruction_pointer as usize];
 
-      print!("{}", part1 as char);
-      print!("{}", part2 as char);
+      machine.output_buffer.put(part1);
+      machine.output_buffer.put(part2);
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 2,
@@ -1453,7 +1452,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     op_code: 0xf4,
     run: &|machine: &mut Machine| {
       let popped = machine.stack.pop();
-      print!("0x{:02x}", (popped & 0x00ff) as u8);
+      machine.output_buffer.put_string(format!("0x{:02x}", (popped & 0x00ff) as u8));
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
@@ -1465,7 +1464,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     op_code: 0xf5,
     run: &|machine: &mut Machine| {
       let popped = machine.stack.pop();
-      print!("0x{:04x}", popped);
+      machine.output_buffer.put_string(format!("0x{:04x}", popped));
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,

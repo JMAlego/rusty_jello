@@ -9,6 +9,7 @@ use arguments::Args;
 use machine::Machine;
 use assembler::Assembler;
 
+use std::io;
 use std::env;
 use std::fs::File;
 use std::path::Path;
@@ -58,6 +59,7 @@ fn main() {
     println!("  -a: Assemble only");
     println!("  -m: Measure time");
     println!("  -q: Show only program output");
+    println!("  -b: Buffer output");
     println!("Options:");
     println!("  -dbl: Sets the debug level, can be 0 to 2  (default: 0)");
     println!("  -t: Sets internal clock rate in hertz (default: 0)");
@@ -70,6 +72,8 @@ fn main() {
   }
 
   let assemble_mode: bool = args.has_arg("-a");
+
+  let buffer_mode: bool = args.has_arg("-b");
 
   let measure_time: bool = args.has_arg("-m");
 
@@ -200,10 +204,17 @@ fn main() {
 
     if !quiet_mode {
       println!("Initial {:?}", machine);
-      println!();
-      println!("---Program Output Start---");
+      if !buffer_mode {
+        println!();
+        println!("---Program Output Start---")
+      };
     }
     let execution_start_time = Instant::now();
+
+    let mut buffered_output: String = String::new();
+
+    let mut stdout = io::stdout();
+
     while !machine.flags.halt {
       if debug_level > 1 {
         println!("{:?}", machine);
@@ -212,19 +223,44 @@ fn main() {
         println!("{}", machine.format_inst());
       }
       machine.step();
+      if machine.output_buffer.has_bytes(){
+        for byte in machine.output_buffer.take_all() {
+          if buffer_mode {
+            buffered_output.push(byte as char);
+          }else{
+            write!(stdout, "{}", byte as char).unwrap();
+            if debug_level > 0 {
+              write!(stdout, "\n").unwrap();
+            }
+            stdout.flush().unwrap();
+          }
+        }
+      }
     }
+
     let execution_duration: Duration = execution_start_time.elapsed();
     let execution_elapsed: f64 =
       execution_duration.as_secs() as f64 + execution_duration.subsec_nanos() as f64 * 1e-9;
     if !quiet_mode {
-      println!();
-      println!("----Program Output End----");
+      if !buffer_mode {
+        println!();
+        println!("----Program Output End----");
+      }
       println!();
       println!("Final {:?}", machine);
     }
 
     if measure_time {
       println!("Execution took {:.8} seconds", execution_elapsed);
+    }
+
+    if buffer_mode {
+      println!();
+      println!("---Program Output Start---");
+      print!("{}", buffered_output);
+      println!();
+      println!("---Program Output Start---");
+      println!();
     }
 
     if !quiet_mode {
