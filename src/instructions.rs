@@ -711,7 +711,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     clock_cycles: 1,
   },
   Instruction {
-    inst: "PUSHI",
+    inst: "PUSHP",
     num_args: 0,
     op_code: 0x4a,
     run: &|machine: &mut Machine| {
@@ -724,7 +724,7 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     clock_cycles: 1,
   },
   Instruction {
-    inst: "POPI",
+    inst: "POPP",
     num_args: 0,
     op_code: 0x4b,
     run: &|machine: &mut Machine| {
