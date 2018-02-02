@@ -37,7 +37,7 @@ fn main() {
   let quiet_mode: bool = args.has_arg("-q");
 
   if !quiet_mode {
-    println!("Rusty Jello v0.7.0 (Rumbustious) by Jacob Allen");
+    println!("Rusty Jello v0.7.1 (Rumbustious) by Jacob Allen");
   }
 
   if args.has_arg("") {

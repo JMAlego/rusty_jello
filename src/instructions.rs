@@ -29,7 +29,7 @@ pub fn find_inst_by_name(name: &str) -> Option<Instruction> {
   return None;
 }
 
-pub const INSTRUCTION_COUNT: usize = 95;
+pub const INSTRUCTION_COUNT: usize = 101;
 
 pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
   Instruction {
@@ -1367,6 +1367,82 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     clock_cycles: 1,
   },
   Instruction {
+    inst: "TSAST",
+    num_args: 0,
+    op_code: 0x88,
+    run: &|machine: &mut Machine| {
+      machine.flags.test = machine.stack.pop() != 0;
+      machine.stack.push(1);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 3,
+  },
+  Instruction {
+    inst: "TSAINC",
+    num_args: 0,
+    op_code: 0x89,
+    run: &|machine: &mut Machine| {
+      let popped: u16 = machine.stack.pop();
+      machine.flags.test = popped != 0;
+      machine.stack.push((popped as u32 + 1) as u16);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 4,
+  },
+  Instruction {
+    inst: "TSADEC",
+    num_args: 0,
+    op_code: 0x8a,
+    run: &|machine: &mut Machine| {
+      let popped: u16 = machine.stack.pop();
+      machine.flags.test = popped != 0;
+      machine
+        .stack
+        .push((((popped as i32 - 1) + 65536) % 65536) as u16);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 4,
+  },
+  Instruction {
+    inst: "TSASTR",
+    num_args: 0,
+    op_code: 0x8b,
+    run: &|machine: &mut Machine| {
+      machine.flags.test = machine.registers[0] != 0;
+      machine.registers[0] = 1;
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 2,
+  },
+  Instruction {
+    inst: "TSAINR",
+    num_args: 0,
+    op_code: 0x8c,
+    run: &|machine: &mut Machine| {
+      machine.flags.test = machine.registers[0] != 0;
+      machine.registers[0] = (machine.registers[0] as u32 + 1) as u16;
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 2,
+  },
+  Instruction {
+    inst: "TSADER",
+    num_args: 0,
+    op_code: 0x8d,
+    run: &|machine: &mut Machine| {
+      machine.flags.test = machine.registers[0] != 0;
+      machine.registers[0] = (((machine.registers[0] as i32 - 1) + 65536) % 65536) as u16;
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 2,
+  },
+  Instruction {
     inst: "LSFTB",
     num_args: 0,
     op_code: 0x90,
@@ -1452,7 +1528,9 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     op_code: 0xf4,
     run: &|machine: &mut Machine| {
       let popped = machine.stack.pop();
-      machine.output_buffer.put_string(format!("0x{:02x}", (popped & 0x00ff) as u8));
+      machine
+        .output_buffer
+        .put_string(format!("0x{:02x}", (popped & 0x00ff) as u8));
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,
@@ -1464,7 +1542,9 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     op_code: 0xf5,
     run: &|machine: &mut Machine| {
       let popped = machine.stack.pop();
-      machine.output_buffer.put_string(format!("0x{:04x}", popped));
+      machine
+        .output_buffer
+        .put_string(format!("0x{:04x}", popped));
       machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
     },
     bytes_per_arg: 0,

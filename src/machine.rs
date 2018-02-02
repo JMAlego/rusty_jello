@@ -297,6 +297,7 @@ impl fmt::Debug for Machine {
           ip_stack: {:?},
           stack: {:?},
           flags: {:?},
+          sp_reg: {{r0:{:04x}, r1:{:04x}, r2:{:04x}, r3:{:04x}}},
           memory: {}
         }}",
       format!("{:04x}: ", self.accumulator),
@@ -304,6 +305,10 @@ impl fmt::Debug for Machine {
       self.instruction_pointer_stack,
       self.stack,
       self.flags,
+      self.registers[0],
+      self.registers[1],
+      self.registers[2],
+      self.registers[3],
       self.format_memory(),
     )
   }

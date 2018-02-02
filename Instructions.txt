@@ -153,7 +153,7 @@ SECTION: IMPLICIT OPERANDS
 0x7e    DEC3P
 0x7f    DEC4P
 ------------------------
-SECTION: 
+SECTION: Testing
 ------------------------
 0x80    TEST
 0x81    TESTC
@@ -163,16 +163,16 @@ SECTION:
 0x85
 0x86
 0x87
-0x88
-0x89
-0x8a
-0x8b
-0x8c
-0x8d
+0x88    TSAST
+0x89    TSAINC
+0x8a    TSADEC
+0x8b    TSASTR
+0x8c    TSAINR
+0x8d    TSADER
 0x8e
 0x8f
 ------------------------
-SECTION: 
+SECTION: Byte Operations
 ------------------------
 0x90    LSFTB
 0x91    RSFTB
