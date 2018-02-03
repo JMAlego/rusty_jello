@@ -1,0 +1,103 @@
+PUSHI 0x1234
+LRI 0x00ff
+SR0
+CALLI :PRINT
+HALT
+
+:PRINT
+  PUSHI 0x0000
+  LR0
+  PUSH
+  :PN_START
+  DUP
+  LOAD
+  DUP
+  ANDI 0x00ff
+  PUSH
+  #If first byte null
+  PUSHI 0x0000
+  JMPIE :PN_END1
+  DROP
+  #Add 1 to counter and wrap
+  ROTCW4
+  INC
+  PUSH
+  PUSHI 0x0010
+  JMPIG :nowrap1
+  DROP
+  SWAP
+  PUSHI 0x0020
+  JMPIE :wrap1
+  JMPI :endwrap1
+  :wrap1
+  PRNI "\n"
+  DROP
+  SWAP
+  DROP
+  PUSHI 0x0000
+  ROTAC4
+  DROP
+  JMPI :noprint1
+  :endwrap1
+  DROP
+  SWAP
+  #PAD
+  PUSHI 0x0000
+  :nowrap1
+  DROP
+  ROTAC4
+  #Print first byte
+  PRN
+  :noprint1
+  RSFTB
+  PUSH
+  #If second byte null
+  PUSHI 0x0000
+  JMPIE :PN_END2
+  DROP
+  #Add 1 to counter and wrap
+  ROTCW
+  INC
+  PUSH
+  PUSHI 0x0010
+  JMPIG :nowrap2
+  DROP
+  SWAP
+  PUSHI 0x0020
+  JMPIE :wrap2
+  JMPI :endwrap2
+  :wrap2
+  PRNI "\n"
+  DROP
+  SWAP
+  DROP
+  PUSHI 0x0000
+  ROTAC
+  DROP
+  JMPI :noprint2
+  :endwrap2
+  DROP
+  SWAP
+  #PAD
+  PUSHI 0x0000
+  :nowrap2
+  DROP
+  ROTAC
+  #Print second byte
+  PRN
+  #Inc
+  :noprint2
+  INC2
+  PUSH
+  #Loop
+  JMPI :PN_START
+  :PN_END1
+  DROP
+  :PN_END2
+  DROP
+  DROP
+  DROP
+  DROP
+  RET
+
+.DATA 0x00ff "This text should break onto new lines quite nicely.\0"

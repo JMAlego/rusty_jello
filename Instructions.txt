@@ -71,10 +71,10 @@ SECTION: STACK INTERACTION
 0x38    ROTAC
 0x39    DUP
 0x3a    PUSHI
-0x3b    
-0x3c
-0x3d
-0x3e
+0x3b    ROTCW4
+0x3c    ROTAC4
+0x3d    ROTCW5
+0x3e    ROTAC5
 0x3f
 ------------------------
 SECTION: INSTRUCTION POINTER & LOCATION

@@ -29,7 +29,7 @@ pub fn find_inst_by_name(name: &str) -> Option<Instruction> {
   return None;
 }
 
-pub const INSTRUCTION_COUNT: usize = 101;
+pub const INSTRUCTION_COUNT: usize = 105;
 
 pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
   Instruction {
@@ -514,6 +514,82 @@ pub const INSTRUCTIONS: [Instruction; INSTRUCTION_COUNT] = [
     },
     bytes_per_arg: 2,
     clock_cycles: 3,
+  },
+  Instruction {
+    inst: "ROTCW4",
+    num_args: 0,
+    op_code: 0x3b,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      let third: u16 = machine.stack.pop();
+      let fourth: u16 = machine.stack.pop();
+      machine.stack.push(third);
+      machine.stack.push(second);
+      machine.stack.push(first);
+      machine.stack.push(fourth);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 2,
+  },
+  Instruction {
+    inst: "ROTAC4",
+    num_args: 0,
+    op_code: 0x3c,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      let third: u16 = machine.stack.pop();
+      let fourth: u16 = machine.stack.pop();
+      machine.stack.push(first);
+      machine.stack.push(fourth);
+      machine.stack.push(third);
+      machine.stack.push(second);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 2,
+  },
+  Instruction {
+    inst: "ROTCW5",
+    num_args: 0,
+    op_code: 0x3d,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      let third: u16 = machine.stack.pop();
+      let fourth: u16 = machine.stack.pop();
+      let fifth: u16 = machine.stack.pop();
+      machine.stack.push(first);
+      machine.stack.push(fifth);
+      machine.stack.push(fourth);
+      machine.stack.push(third);
+      machine.stack.push(second);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 2,
+  },
+  Instruction {
+    inst: "ROTAC5",
+    num_args: 0,
+    op_code: 0x3e,
+    run: &|machine: &mut Machine| {
+      let first: u16 = machine.stack.pop();
+      let second: u16 = machine.stack.pop();
+      let third: u16 = machine.stack.pop();
+      let fourth: u16 = machine.stack.pop();
+      let fifth: u16 = machine.stack.pop();
+      machine.stack.push(fourth);
+      machine.stack.push(third);
+      machine.stack.push(second);
+      machine.stack.push(first);
+      machine.stack.push(fifth);
+      machine.instruction_pointer = (machine.instruction_pointer as u32 + 1) as u16;
+    },
+    bytes_per_arg: 0,
+    clock_cycles: 2,
   },
   Instruction {
     inst: "JMPI",
