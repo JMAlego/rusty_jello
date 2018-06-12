@@ -145,7 +145,7 @@ impl Assembler {
     let mut result: Vec<Byte> = Vec::new();
     let mut line_counter: usize = 1;
     let mut labels_from_previous: Vec<String> = Vec::new();
-    let mut data_entries: Vec<(u16, Vec<Byte>)> = Vec::new();
+    let mut data_entries: Vec<(u16, Vec<Byte>, usize)> = Vec::new();
     for line in self.program.trim().lines() {
       if line.trim().is_empty() || line.trim().starts_with('#') {
         line_counter += 1;
@@ -156,7 +156,7 @@ impl Assembler {
         line_counter += 1;
         continue;
       }
-      if line.trim().starts_with(".DATA") {
+      if line.trim().to_uppercase().starts_with(".DATA") {
         let split_line = Assembler::split_line(line);
         if split_line.len() == 3 {
           if let Some(_address) = Assembler::parse_value(split_line[1].as_str()) {
@@ -167,7 +167,7 @@ impl Assembler {
               return Err(format!("Data Address Length Error on line {}", line_counter).to_string());
             }
             if let Some(data) = Assembler::parse_value(split_line[2].as_str()) {
-              data_entries.push((address, data));
+              data_entries.push((address, data, line_counter));
             } else {
               return Err(format!("Data Value Error on line {}", line_counter).to_string());
             }
@@ -199,9 +199,9 @@ impl Assembler {
       }
     }
     for entry in data_entries {
-      let (address, data) = entry;
-      if result.len() >= address as usize {
-        return Err(format!("Data attempted to overwrite address at {:04x}", address).to_string());
+      let (address, data, on_line) = entry;
+      if result.len() > address as usize {
+        return Err(format!("Data directive on line {} attempted to overwrite data at address 0x{:04x}", on_line, address).to_string());
       }
       while result.len() < address as usize {
         result.push(Byte::from_u8(0x00));
